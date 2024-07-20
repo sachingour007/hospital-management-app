@@ -1,5 +1,8 @@
 const { Schema, model } = require("mongoose");
 const validator = require("validator");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const ApiError = require("../utils/ApiError");
 
 const userSchema = new Schema({
   firstName: {
@@ -55,7 +58,28 @@ const userSchema = new Schema({
   },
 });
 
-userSchema.pre("save",)
+// /**We bcrypt the password by bcrypJS and mongoose Pre hook method */
+
+userSchema.pre("save", async function (next) {
+  const user = this;
+  if (!user.isModified("password")) return next();
+  try {
+    const saltRound = await bcrypt.saltRound(10);
+    const hashPassword = await bcrypt.hash(user.password, saltRound);
+    user.password = hashPassword;
+  } catch (error) {
+    next(error);
+  }
+});
+
+userSchema.method.isPasswordCorrect = async function (password) {
+  try {
+    return bcrypt.compare(password, this.password);
+  } catch (error) {
+    console.log("Error nin Compare Password", error);
+  }
+};
+
 
 
 const User = model("User", userSchema);
