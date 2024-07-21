@@ -10,8 +10,7 @@ const MessageController = asyncHandler(async (req, res, next) => {
       (field) => field.trim() === ""
     )
   ) {
-    console.log("kya hua");
-    return next(new ApiError(400,"Please Fill Full Form"));
+    return next(new ApiError(400, "Please Fill Full Form"));
   }
 
   await Message.create({ firstName, lastName, email, phone, message });

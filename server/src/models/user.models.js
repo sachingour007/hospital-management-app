@@ -64,7 +64,7 @@ userSchema.pre("save", async function (next) {
   const user = this;
   if (!user.isModified("password")) return next();
   try {
-    const saltRound = await bcrypt.saltRound(10);
+    const saltRound = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(user.password, saltRound);
     user.password = hashPassword;
   } catch (error) {
@@ -72,7 +72,7 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-userSchema.method.isPasswordCorrect = async function (password) {
+userSchema.methods.isPasswordCorrect = async function (password) {
   try {
     return bcrypt.compare(password, this.password);
   } catch (error) {
@@ -80,7 +80,20 @@ userSchema.method.isPasswordCorrect = async function (password) {
   }
 };
 
-
+userSchema.methods.generateJsonWebToken = function () {
+  return jwt.sign(
+    {
+      id: this._id,
+      Email: this.email,
+      firstName: this.firstName,
+      lastName: this.lastName,
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+    }
+  );
+};
 
 const User = model("User", userSchema);
 

@@ -23,10 +23,11 @@ app.use(
   })
 );
 
-
 const messageRouter = require("./routes/message.routes");
+const userRouter = require("./routes/user.routes.js");
 
 app.use("/api/v1/message", messageRouter);
+app.use("/api/v1/user", userRouter);
 
 app.use(errorHandler);
 module.exports = app;
