@@ -2,6 +2,7 @@ const User = require("../models/user.models.js");
 const asyncHandler = require("../utils/asyncHandler.js");
 const { ApiError } = require("../utils/ApiError.js");
 const { ApiResponse } = require("../utils/ApiResponse.js");
+const { generateToken } = require("../utils/jwtToken");
 
 const patientRegister = asyncHandler(async (req, res, next) => {
   const {
@@ -42,9 +43,10 @@ const patientRegister = asyncHandler(async (req, res, next) => {
 
   const userCreated = await User.findById(user._id).select("-password");
 
-  res
-    .status(200)
-    .json(new ApiResponse(200, userCreated, "User registered successfully"));
+  generateToken(userCreated, 200, "User registered successfully!", res);
+  // res
+  //   .status(200)
+  //   .json(new ApiResponse(200, userCreated, "User registered successfully"));
 });
 
 const login = asyncHandler(async (req, res, next) => {
@@ -71,9 +73,7 @@ const login = asyncHandler(async (req, res, next) => {
   }
   const userDetails = await User.findOne(user._id).select("-password");
 
-  res
-    .status(200)
-    .json(new ApiResponse(200, userDetails, "User Logged In Successfully!"));
+  generateToken(userDetails, 200, "User Logged In Successfully!", res);
 });
 
 module.exports = { patientRegister, login };
