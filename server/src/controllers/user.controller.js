@@ -11,15 +11,24 @@ const patientRegister = asyncHandler(async (req, res, next) => {
     email,
     password,
     phone,
+    dob,
     nicNumber,
     gender,
     role,
   } = req.body;
 
   if (
-    [firstName, lastName, email, phone, password, nicNumber, gender, role].some(
-      (field) => field.trim() === ""
-    )
+    [
+      firstName,
+      lastName,
+      email,
+      phone,
+      dob,
+      password,
+      nicNumber,
+      gender,
+      role,
+    ].some((field) => field.trim() === "")
   ) {
     return next(new ApiError(400, "Please Fill Full Form"));
   }
@@ -36,6 +45,7 @@ const patientRegister = asyncHandler(async (req, res, next) => {
     email,
     password,
     phone,
+    dob,
     nicNumber,
     gender,
     role,
@@ -76,4 +86,64 @@ const login = asyncHandler(async (req, res, next) => {
   generateToken(userDetails, 200, "User Logged In Successfully!", res);
 });
 
-module.exports = { patientRegister, login };
+const adminRegister = asyncHandler(async (req, res, next) => {
+  const {
+    firstName,
+    lastName,
+    email,
+    password,
+    phone,
+    dob,
+    nicNumber,
+    gender,
+  } = req.body;
+  if (
+    [firstName, lastName, email, phone, dob, password, nicNumber, gender].some(
+      (field) => field.trim() === ""
+    )
+  ) {
+    return next(new ApiError(400, "Please Fill Full Form"));
+  }
+  const isRegistered = await User.findOne({ email });
+  if (isRegistered) {
+    return next(
+      new ApiError(400, `${isRegistered.role} already Exits with Same Email!`)
+    );
+  }
+
+  const admin = await User.create({
+    firstName,
+    lastName,
+    email,
+    password,
+    phone,
+    dob,
+    nicNumber,
+    gender,
+    role: "Admin",
+  });
+
+  const adminCreated = await User.findById(admin._id).select("-password");
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, adminCreated, "New Admin Registered!"));
+});
+
+const getAllDoctors = asyncHandler(async (req, res, next) => {
+  const doctors = await User.find({ role: "Doctor" });
+  res.status(200).json(new ApiResponse(200, doctors, "All Doctors! "));
+});
+
+const getUserDetails = asyncHandler(async (req, res, next) => {
+  const user = req.user;
+  res.status(200).json(new ApiResponse(200, user, "All Users! "));
+});
+
+module.exports = {
+  patientRegister,
+  login,
+  adminRegister,
+  getAllDoctors,
+  getUserDetails,
+};

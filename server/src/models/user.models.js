@@ -33,6 +33,10 @@ const userSchema = new Schema({
     minLength: [10, "Phone Number Must Contain Exact 10 Digit"],
     maxLength: [10, "Phone Number Must Contain Exact 10 Digit"],
   },
+  dob:{
+    type: Date,
+    required: [true, "DOB is Required!"]
+  },
   nicNumber: {
     type: String,
     require: [true, "NIC is required!"],
