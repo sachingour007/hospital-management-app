@@ -140,10 +140,34 @@ const getUserDetails = asyncHandler(async (req, res, next) => {
   res.status(200).json(new ApiResponse(200, user, "All Users! "));
 });
 
+const logoutAdmin = asyncHandler(async (req, res, next) => {
+  res
+    .status(200)
+    .clearCookie("adminToken", "", {
+      httpOnly: true,
+      expire: new Date(Date.now()),
+      secure: true,
+    })
+    .json(new ApiResponse(200, {}, "Admin Logged Out Successfully!"));
+});
+
+const logoutPatient = asyncHandler(async (req, res, next) => {
+  res
+    .status(200)
+    .clearCookie("patientToken", "", {
+      httpOnly: true,
+      expires: new Date(Date.now()),
+      secure: true,
+    })
+    .json(new ApiResponse(200, {}, "patient Logged Out Successfully!"));
+});
+
 module.exports = {
   patientRegister,
   login,
   adminRegister,
   getAllDoctors,
   getUserDetails,
+  logoutAdmin,
+  logoutPatient,
 };
