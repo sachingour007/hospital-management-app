@@ -18,4 +18,11 @@ const MessageController = asyncHandler(async (req, res, next) => {
   res.status(201).json(new ApiResponse(201, "Message Sent !"));
 });
 
-module.exports = MessageController;
+const allMessages = asyncHandler(async(req, res, next) => {
+  const getAllMessages = await Message.find();
+  res
+   .status(200)
+   .json(new ApiResponse(200, getAllMessages, "All Massages!"))
+})
+
+module.exports = {MessageController, allMessages};

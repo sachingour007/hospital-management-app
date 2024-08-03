@@ -12,6 +12,7 @@ const {
   getUserDetails,
   logoutAdmin,
   logoutPatient,
+  addNewDoctor,
 } = require("../controllers/user.controller.js");
 
 router.route("/patient/register").post(patientRegister);
@@ -22,5 +23,6 @@ router.route("/admin/me").get(isAdminAuth, getUserDetails);
 router.route("/patient/me").get(isPatientAuth, getUserDetails);
 router.route("/admin/logout").get(isAdminAuth, logoutAdmin);
 router.route("/patient/logout").get(isPatientAuth, logoutPatient);
+router.route("/doctor/addnew").post(isAdminAuth, addNewDoctor);
 
 module.exports = router;

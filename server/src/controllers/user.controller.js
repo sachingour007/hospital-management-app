@@ -3,6 +3,7 @@ const asyncHandler = require("../utils/asyncHandler.js");
 const { ApiError } = require("../utils/ApiError.js");
 const { ApiResponse } = require("../utils/ApiResponse.js");
 const { generateToken } = require("../utils/jwtToken");
+const cloudinary = require("cloudinary");
 
 const patientRegister = asyncHandler(async (req, res, next) => {
   const {
@@ -162,6 +163,88 @@ const logoutPatient = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse(200, {}, "patient Logged Out Successfully!"));
 });
 
+const addNewDoctor = asyncHandler(async (req, res, next) => {
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return next(new ApiError(400, "Doctor Avtar Required"));
+  }
+
+  console.log(req.files);
+  const { docAvatar } = req.files;
+  const allowedFormats = ["image/png", "image/jpeg", "image/webp"];
+  if (!allowedFormats.includes(docAvatar.mimetype)) {
+    return next(new ApiError(400, "File Formate not Supported!"));
+  }
+
+  const {
+    firstName,
+    lastName,
+    email,
+    password,
+    phone,
+    dob,
+    nicNumber,
+    gender,
+    doctorDepartment,
+  } = req.body;
+
+  if (
+    !firstName ||
+    !lastName ||
+    !email ||
+    !password ||
+    !phone ||
+    !dob ||
+    !nicNumber ||
+    !gender ||
+    !doctorDepartment
+  ) {
+    return next(new ApiError(400, "Please Provide Full Details!"));
+  }
+  const isRegistered = await User.findOne({ email });
+  if (isRegistered) {
+    return next(
+      new ApiError(400, `${isRegistered.role} already Exist with Email!`)
+    );
+  }
+
+  const cloudinaryResponse = await cloudinary.uploader.upload(
+    docAvatar.tempFilePath
+  );
+
+  if (!cloudinaryResponse || cloudinaryResponse.error) {
+    console.log(
+      "cloudinary Error",
+      cloudinaryResponse.error || "Unknown Cloudinary Error"
+    );
+  }
+  console.log("cloudinaryResponse :", cloudinaryResponse);
+
+  const doctor = await User.create({
+    firstName,
+    lastName,
+    email,
+    password,
+    phone,
+    dob,
+    nicNumber,
+    gender,
+    doctorDepartment,
+    role: "Doctor",
+    docAvatar: {
+      public_id: cloudinaryResponse.public_id,
+      url: cloudinaryResponse.secure_url,
+    },
+  });
+
+  const DoctorDetails = await User.findById(doctor._id).select("-password");
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, DoctorDetails, "New Doctor Register Successfully!")
+    );
+});
+
 module.exports = {
   patientRegister,
   login,
@@ -170,4 +253,5 @@ module.exports = {
   getUserDetails,
   logoutAdmin,
   logoutPatient,
+  addNewDoctor,
 };
